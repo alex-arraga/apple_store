@@ -31,9 +31,24 @@ jobs:
     - name: Run golangci-lint
       run: golangci-lint run --timeout 5m
 
-  build:
+  test:
     runs-on: ubuntu-24.x
     needs: [lint]
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.23.x'
+
+    - name: Run Tests
+      run: go test -v ./...
+
+  build:
+    runs-on: ubuntu-24.x
+    needs: [lint, test]
     steps:
     - name: Check out code
       uses: actions/checkout@v4
