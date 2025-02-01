@@ -25,4 +25,4 @@ linters-settings:
       - standard
       - default
       - prefix(github.com/alex-arraga)
-      - prefix(github.com/alex-arraga/rss_project)
+      - prefix(github.com/alex-arraga/apple_store)
