@@ -1,3 +1,3 @@
 module github.com/alex-arraga/apple_store
 
-go 1.23.1
+go 1.23
