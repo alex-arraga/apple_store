@@ -1,5 +1,5 @@
 package hello
 
 func Greet() string {
-	return "Hello GitHub Actions - 2"
+	return "Hello GitHub Actions"
 }
