@@ -1,29 +1,35 @@
 package main
 
 import (
-	"log"
 	"net/http"
 	"os"
+
 	"time"
 
+	"github.com/alex-arraga/apple_store/metrics"
+	"github.com/alex-arraga/apple_store/middlewares"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
-	"github.com/joho/godotenv"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 func main() {
-	log.Print("Getting PORT")
-	const envFile string = ".env"
-
-	// Load enviroment variables from the .env file
-	if err := godotenv.Load(envFile); err != nil {
-		log.Fatalf("failed to load .env file: %v", err)
-	}
+	log.Logger = zerolog.New(os.Stderr).With().Timestamp().Logger()
 
 	port := os.Getenv("PORT")
-	log.Printf("PORT: %v", port)
+	if port == "" {
+		log.Fatal().Msg("PORT not set in environment variables")
+	}
+
+	// Prometheus starts to record metrics
+	rec := prometheus.NewRegistry()
+	metrics.InitMetrics(rec)
 
 	router := chi.NewRouter()
+	router.Use(middlewares.RecordPrometheusMiddleware)
 
 	router.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"https://*", "http://*"},
@@ -37,8 +43,12 @@ func main() {
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		_, err := w.Write([]byte("Hellow world"))
 		if err != nil {
-			log.Fatalf("Error in '/' route: %s", err)
+			log.Fatal().Msgf("Error in '/' route: %s", err)
 		}
+	})
+
+	router.Get("/metrics", func(w http.ResponseWriter, r *http.Request) {
+		promhttp.HandlerFor(rec, promhttp.HandlerOpts{})
 	})
 
 	s := &http.Server{
@@ -49,9 +59,9 @@ func main() {
 		IdleTimeout:  60 * time.Second,
 	}
 
+	log.Print("Server listening")
 	err := s.ListenAndServe()
 	if err != nil {
-		log.Fatalf("Server failed: %s", err)
+		log.Fatal().Msgf("Server failed: %s", err)
 	}
-	log.Print("Server listening")
 }

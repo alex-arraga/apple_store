@@ -67,5 +67,5 @@ services:
     restart: unless-stopped
     ports:
     - 80:8080
-
-  
+    env_file:
+      - .env
