@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -9,12 +8,21 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	fmt.Print("Starting server")
+	log.Print("Getting PORT")
+	const envFile string = ".env"
+
+	// Load enviroment variables from the .env file
+	if err := godotenv.Load(envFile); err != nil {
+		log.Fatalf("failed to load .env file: %v", err)
+	}
 
 	port := os.Getenv("PORT")
+	log.Printf("PORT: %v", port)
+
 	router := chi.NewRouter()
 
 	router.Use(cors.Handler(cors.Options{
@@ -45,4 +53,5 @@ func main() {
 	if err != nil {
 		log.Fatalf("Server failed: %s", err)
 	}
+	log.Print("Server listening")
 }
