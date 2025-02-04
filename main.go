@@ -3,17 +3,17 @@ package main
 import (
 	"net/http"
 	"os"
-
 	"time"
 
-	"github.com/alex-arraga/apple_store/metrics"
-	"github.com/alex-arraga/apple_store/middlewares"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+
+	"github.com/alex-arraga/apple_store/metrics"
+	"github.com/alex-arraga/apple_store/middlewares"
 )
 
 func main() {
