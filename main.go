@@ -57,7 +57,7 @@ func main() {
 		IdleTimeout:  60 * time.Second,
 	}
 
-	log.Print("Server listening")
+	log.Print("Server listening...")
 	err := s.ListenAndServe()
 	if err != nil {
 		log.Fatal().Msgf("Server failed: %s", err)
