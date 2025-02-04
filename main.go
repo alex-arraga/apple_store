@@ -8,7 +8,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
@@ -17,6 +16,7 @@ import (
 )
 
 func main() {
+	// Config zerolog
 	log.Logger = zerolog.New(os.Stderr).With().Timestamp().Logger()
 
 	port := os.Getenv("PORT")
@@ -47,9 +47,7 @@ func main() {
 		}
 	})
 
-	router.Get("/metrics", func(w http.ResponseWriter, r *http.Request) {
-		promhttp.HandlerFor(rec, promhttp.HandlerOpts{})
-	})
+	router.Handle("/metrics", metrics.GetMetricsHandler(rec))
 
 	s := &http.Server{
 		Handler:      router,

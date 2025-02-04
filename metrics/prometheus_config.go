@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 var (
@@ -18,13 +19,13 @@ var (
 	// 	},
 	// })
 
-	// Métrica para contar operaciones procesadas
+	// Metric that count the processed operations
 	opsProcessed = prometheus.NewCounter(prometheus.CounterOpts{
 		Name: myapp + "_ops_total",
 		Help: "The total number of processed events",
 	})
 
-	// Métrica para la cantidad de solicitudes HTTP
+	// Metric that count the total of request
 	httpRequestsTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: myapp + "_http_requests_total",
@@ -33,7 +34,7 @@ var (
 		[]string{"method", "endpoint", "status"},
 	)
 
-	// Métrica para medir la duración de las solicitudes HTTP
+	// Metric for measuring request duration
 	httpRequestDuration = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Name:    myapp + "_http_request_duration_seconds",
@@ -43,7 +44,7 @@ var (
 		[]string{"method", "endpoint"},
 	)
 
-	// Métrica para registrar errores
+	// Metric to register errores
 	errorCount = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: myapp + "_error_count_total",
@@ -53,23 +54,30 @@ var (
 	)
 )
 
-// Incrementa las métricas de solicitudes HTTP
+// Increment the metrics of the request HTTP
 func RecordHTTPRequests(method, endpoint string, statusCode int, duration float64) {
 	httpRequestsTotal.WithLabelValues(method, endpoint, http.StatusText(statusCode)).Inc()
 	httpRequestDuration.WithLabelValues(method, endpoint).Observe(duration)
 }
 
-// Incrementa las métricas de errores
+// Increment the metrics of errors
 func RecordError(errorType string) {
 	errorCount.WithLabelValues(errorType).Inc()
 }
 
-func InitMetrics(r *prometheus.Registry) {
-	// Record metrics
-	log.Print("Starting Prometheus...")
+// Handler to get and view metrics
+func GetMetricsHandler(r *prometheus.Registry) http.Handler {
+	return promhttp.HandlerFor(r, promhttp.HandlerOpts{})
+}
 
-	r.MustRegister(opsProcessed)
-	r.MustRegister(httpRequestsTotal)
-	r.MustRegister(httpRequestDuration)
-	r.MustRegister(errorCount)
+// Starts metric recording
+func InitMetrics(r *prometheus.Registry) {
+	log.Print("Registering Prometheus metrics...")
+
+	r.MustRegister(
+		opsProcessed,
+		httpRequestsTotal,
+		httpRequestDuration,
+		errorCount,
+	)
 }
