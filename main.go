@@ -11,12 +11,18 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
+	"github.com/alex-arraga/apple_store/db/conn"
 	"github.com/alex-arraga/apple_store/metrics"
 	"github.com/alex-arraga/apple_store/middlewares"
 )
 
+type User struct {
+	Name  string
+	Email string
+}
+
 func main() {
-	// Config zerolog
+	// ! Config zerolog to promtail
 	logFile, err := os.OpenFile("/app/logs/app.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to open log file")
@@ -31,6 +37,24 @@ func main() {
 	if port == "" {
 		log.Fatal().Msg("PORT not set in environment variables")
 	}
+
+	db, err := conn.InitDB()
+	if err != nil {
+		log.Fatal().Msgf("Failed DB connection: %v", err)
+	}
+
+	// Auto-migrate to create table if it doesn't exist
+	if err := db.AutoMigrate(&User{}); err != nil {
+		log.Fatal().Msgf("Error in migration: %v", err)
+	}
+
+	// Insert a test user
+	user := User{Name: "Juan Perez", Email: "juan.perez@example.com"}
+	if err := db.Create(&user).Error; err != nil {
+		log.Fatal().Msgf("Failed to create user: %v", err)
+	}
+
+	log.Printf("User successfully created: %v \n", user)
 
 	// Prometheus starts to record metrics
 	rec := prometheus.NewRegistry()
