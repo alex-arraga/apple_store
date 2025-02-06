@@ -17,8 +17,16 @@ import (
 
 func main() {
 	// Config zerolog
-	log.Logger = zerolog.New(os.Stderr).With().Timestamp().Logger()
+	logFile, err := os.OpenFile("/app/logs/app.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to open log file")
+	}
+	defer logFile.Close()
 
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: logFile})
+	log.Print("Starting log app...")
+
+	// Get env
 	port := os.Getenv("PORT")
 	if port == "" {
 		log.Fatal().Msg("PORT not set in environment variables")
@@ -58,7 +66,7 @@ func main() {
 	}
 
 	log.Print("Server listening...")
-	err := s.ListenAndServe()
+	err = s.ListenAndServe()
 	if err != nil {
 		log.Fatal().Msgf("Server failed: %s", err)
 	}
