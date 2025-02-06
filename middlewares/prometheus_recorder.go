@@ -4,8 +4,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/alex-arraga/apple_store/metrics"
 	"github.com/rs/zerolog/log"
+
+	"github.com/alex-arraga/apple_store/metrics"
 )
 
 // PrometheusMiddleware mide y registra las métricas de las solicitudes HTTP
